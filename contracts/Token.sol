@@ -1,13 +1,17 @@
-pragma solidity ^0.4.15;
+pragma solidity ^0.4.13;
+
 import './Ownable.sol';
 import './SafeMath.sol';
 import './BasicToken.sol';
+
 /// @title Generic Token Contract
 contract Token is BasicToken {
     using SafeMath for uint256;
+
     string public tokenName; // Defines the name of the token.
     string public tokenSymbol; // Defines the symbol of the token.
     uint256 public decimals; // Number of decimal places for the token.
+
     /*****
         * @dev Sets the variables related to the Token
         * @param _name              string      The name of the Token
