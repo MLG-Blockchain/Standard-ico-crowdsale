@@ -1,7 +1,9 @@
-pragma solidity ^0.4.15;
+pragma solidity ^0.4.13;
+
 import './SafeMath.sol';
 import './Ownable.sol';
 import './Token.sol';
+
 /*****
     * @title The Crowd Sale Contract
     */
