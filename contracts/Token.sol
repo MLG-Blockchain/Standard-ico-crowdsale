@@ -1,16 +1,16 @@
 pragma solidity ^0.4.13;
 
-import './Ownable.sol';
 import './SafeMath.sol';
-import './BasicToken.sol';
+import './StandardToken.sol';
 
 /// @title Generic Token Contract
-contract Token is BasicToken {
+contract Token is StandardToken {
     using SafeMath for uint256;
 
     string public tokenName; // Defines the name of the token.
     string public tokenSymbol; // Defines the symbol of the token.
     uint256 public decimals; // Number of decimal places for the token.
+    uint256 public constant RATE_PER_ETH = 1000; // Number of tokens to be sold per Ether.
 
     /*****
         * @dev Sets the variables related to the Token
@@ -24,21 +24,10 @@ contract Token is BasicToken {
         tokenName = _name;
         tokenSymbol = _symbol;
         decimals = _decimals;
-        totalSupply = _initialSupply ** decimals;
+        totalTokenSupply = _initialSupply * 10 ** decimals;
     }
-    /*****
-        * @dev Transfer the amount of money invested by the investor to his balance
-        * Also, keeps track of at what rate did they buy the token, keeps track of
-        * different rates of tokens at PreSale and ICO
-        * @param _recipient     address     The address of the investor
-        * @param _value         uint256     The number of the tokens bought
-        * @param _ratePerETH    uint256     The rate at which it was bought, different for Pre Sale/ICO
-        * @return               bool        Returns true, if all goes as expected
-        */
-    function transferTokens(address _recipient, uint256 _value, uint256 _ratePerETH) returns (bool) {
-        uint256 finalAmount = _value.mul(_ratePerETH);
-        return transfer(_recipient, finalAmount);
-    }
+
+
     /*****
         * @dev Used to remove the balance, when asking for refund
         * @param _recipient address The beneficiary of the refund

@@ -1,46 +1,64 @@
 pragma solidity ^0.4.13;
 
 import './SafeMath.sol';
-import './Ownable.sol';
 import './Token.sol';
 
 /*****
     * @title The Crowd Sale Contract
     */
-contract TokenSale is Ownable {
+contract TokenSale{
     using SafeMath for uint256;
+
+    address public creatorAdmin;
+
     // Instance of the Real Token
     Token public token;
+
     // Received funds are transferred to the beneficiary
     address public beneficiary;
+
     // Number of Tokens/ETH in PreSale
     uint256 public tokenPerEthPreSale;
+
     // Number of Tokens/ETH in ICO
     uint256 public tokenPerEthICO;
+
     // Start Timestamp of Pre Sale
     uint256 public presaleStartTimestamp;
+
     // End Timestamp of Pre Sale
     uint256 public presaleEndTimestamp;
+
     // Start Timestamp for the ICO
     uint256 public icoStartTimestamp;
+
     // End Timestamp for the ICO
     uint256 public icoEndTimestamp;
+
     // Amount of tokens available for sale in Pre Sale Period
     uint256 public presaleTokenLimit;
+
     // Amount of tokens available for sale in ICO Period
     uint256 public icoTokenLimit;
+
     // Total Tokens Sold in Pre Sale Period
     uint256 public presaleTokenRaised;
+
     // Total Tokens Sold in ICO Period
     uint256 public icoTokenRaised;
+
     // Max Cap for Pre Sale
     uint256 public presaleMaxEthCap;
+
     // Min Cap for ICO
     uint256 public icoMinEthCap;
+
     // Max Cap for ICO
     uint256 public icoMaxEthCap;
+
     // Different number of Investors
     uint256 public investorCount;
+
     /*****
         * State machine
         *   - Unknown:      Default Initial State of the Contract
@@ -54,6 +72,7 @@ contract TokenSale is Ownable {
         */
     enum State{Unknown, Preparing, PreSale, ICO, Success, Failure, PresaleFinalized, ICOFinalized}
     State public crowdSaleState;
+
     /*****
         * @dev Modifier to check that amount transferred is not 0
         */
@@ -61,6 +80,12 @@ contract TokenSale is Ownable {
         require(msg.value != 0);
         _;
     }
+
+    modifier onlyOwner() {
+        require(msg.sender == creatorAdmin);
+        _;
+    }
+
     /*****
         * @dev The constructor function to initialize the token related properties
         * @param _token             address     Specifies the address of the Token Contract
@@ -91,20 +116,30 @@ contract TokenSale is Ownable {
             require(_presaleStartTime > now);
             require(_icoStartTime > _presaleStartTime);
             require(_minICOEthCap <= _maxICOEthCap);
+
+            creatorAdmin = msg.sender;
             token = Token(_token);
+
             tokenPerEthPreSale = _presaleRate;
             tokenPerEthICO = _icoRate;
+
             presaleStartTimestamp = _presaleStartTime;
             presaleEndTimestamp = presaleEndTimestamp + _presaleDays * 1 days;
+
             require(_icoStartTime > presaleEndTimestamp);
+
             icoStartTimestamp = _icoStartTime;
             icoEndTimestamp = _icoStartTime + _icoDays * 1 days;
+
             presaleMaxEthCap = _maxPreSaleEthCap;
             icoMinEthCap = _minICOEthCap;
             icoMaxEthCap = _maxICOEthCap;
+
             presaleTokenLimit = _maxPreSaleEthCap.div(_presaleRate);
             icoTokenLimit = _maxICOEthCap.div(_icoRate);
+
             assert(token.totalSupply() >= presaleTokenLimit.add(icoTokenLimit));
+
             crowdSaleState = State.Preparing;
     }
     /*****
@@ -138,13 +173,15 @@ contract TokenSale is Ownable {
             investorCount++;
         }
         if(isCrowdSaleStatePreSale()) {
-            token.transferTokens(_recipient, boughtTokens, tokenPerEthPreSale);
+            token.transfer(_recipient, boughtTokens);
             presaleTokenRaised = presaleTokenRaised.add(_value);
             return true;
         } else if (isCrowdSaleStateICO()) {
-            token.transferTokens(_recipient, boughtTokens, tokenPerEthICO);
+            token.transfer(_recipient, boughtTokens);
             icoTokenRaised = icoTokenRaised.add(_value);
             return true;
+        } else {
+            revert();
         }
     }
     /*****
